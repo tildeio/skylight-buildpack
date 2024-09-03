@@ -51,5 +51,32 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-chmod +x skylight
-mv skylight bin/skylight
+mkdir -p $BUILD_DIR/bin
+mv skylight $BUILD_DIR/bin/skylight
+
+chmod +x $BUILD_DIR/bin/skylight
+
+cat <<EOF >>$BUILD_DIR/bin/start_skylight
+#!/usr/bin/env bash
+
+./skylight &
+skylight_pid=\$!
+
+"\$@" &
+app_pid=\$!
+
+trap onexit HUP INT
+
+onexit() {
+  echo "onexit handler"
+  kill -SIGTERM \$app_pid
+  kill -SIGTERM \$skylight_pid
+}
+
+# Ignore SIGTERM because the dyno will broadcast it to all children
+trap "" SIGTERM
+
+wait
+EOF
+
+chmod +x $BUILD_DIR/bin/start_skylight
