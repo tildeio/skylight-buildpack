@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+./skylight &
+skylight_pid=$!
+
+"$@" &
+app_pid=$!
+
+trap onexit HUP INT
+
+onexit() {
+  echo "onexit handler"
+  kill -SIGTERM $app_pid
+  kill -SIGTERM $skylight_pid
+}
+
+# Ignore SIGTERM because the dyno will broadcast it to all children
+trap "" SIGTERM
+
+wait

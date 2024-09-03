@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+
+BUILD_DIR=$1
+CACHE_DIR=$2
+ENV_DIR=$3
+
+echo "-----> Installing Skylight for OTLP"
+
+GITHUB_REPO="tildeio/skylight-otlp"
+
+if [ -n "$SKYLIGHT_EDGE" ]; then
+  URL="https://api.github.com/repos/{$GITHUB_REPO}/releases?per_page=1"
+  response=$(curl "$URL" --fail)
+
+  if [ $? -ne 0 ]; then
+    echo "Failed to fetch latest Skylight edge release"
+    exit 1
+  fi
+
+  download_url=$(echo "$response" | jq -r '.[0].assets | .[] | select(.label == "x86_64-linux") | .browser_download_url')
+
+else
+  URL="https://api.github.com/repos/{$GITHUB_REPO}/releases/latest"
+
+  response=$(curl "$URL" --fail)
+
+  if [ $? -ne 0 ]; then
+    echo "Failed to fetch latest Skylight release"
+    exit 1
+  fi
+
+  download_url = $(echo "$response" | jq '.assets | .[] | select(.label == "x86_64-linux") | .browser_download_url')
+fi
+
+if [ -z $download_url ]; then
+  echo "Failed to find download url for Skylight x86_64-linux"
+  exit 1
+fi
+
+curl -L $download_url --fail -o skylight.tar.gz
+if [ $? -ne 0 ]; then
+  echo "Failed to download Skylight binary archive"
+  exit 1
+fi
+
+tar -xzvf skylight.tar.gz
+if [ $? -ne 0 ]; then
+  echo "Failed to extract Skylight binary archive"
+  exit 1
+fi
+
+chmod +x skylight
+mv skylight bin/skylight
