@@ -59,7 +59,7 @@ chmod +x $BUILD_DIR/bin/skylight
 cat <<EOF >>$BUILD_DIR/bin/start_skylight
 #!/usr/bin/env bash
 
-SKYLIGHT_LOG_FILE="-" /app/bin/skylight &
+SKYLIGHT_LOG_FILE="-" /app/bin/skylight -c /app/skylight.toml &
 skylight_pid=\$!
 
 "\$@" &
