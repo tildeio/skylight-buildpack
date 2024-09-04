@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-./skylight &
+SKYLIGHT_LOG_FILE="-" ./skylight &
 skylight_pid=$!
 
 "$@" &
